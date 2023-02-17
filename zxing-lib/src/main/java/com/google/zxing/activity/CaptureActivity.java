@@ -50,9 +50,7 @@ import java.util.Vector;
  * @author Ryan.Tang
  */
 public class CaptureActivity extends AppCompatActivity implements Callback {
-
     private static final int REQUEST_CODE_SCAN_GALLERY = 100;
-
     private CaptureActivityHandler handler;
     private ViewfinderView viewfinderView;
     private ImageButton back;
