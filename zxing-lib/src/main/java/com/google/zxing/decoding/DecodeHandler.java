@@ -107,5 +107,4 @@ final class DecodeHandler extends Handler {
             message.sendToTarget();
         }
     }
-
 }

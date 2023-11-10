@@ -26,7 +26,6 @@ import java.io.FileNotFoundException;
 /**
  * This class is used to help decode images from files which arrive as RGB data
  * from Android bitmaps. It does not support cropping or rotation.
- *
  */
 public final class RGBLuminanceSource extends LuminanceSource {
 

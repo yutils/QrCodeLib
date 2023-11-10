@@ -1,60 +1,81 @@
 # QrCodeLib
 
-## 开发环境准备
-**推荐使用jetBrains Toolbox 中的android studio，并更新到最新正式版**  
+## 在原版上优化如下
 
-【必须】打开AS的安装目录，在bin目录下找到这两个文件（studio.exe.vmoptions，studio64.exe.vmoptions）  
-在其中最后一行添加	-Dfile.encoding=UTF-8   
-```bat
-安装目录位置
-C:\Users\用户名\AppData\Local\JetBrains\Toolbox\apps\AndroidStudio\ch-0\版本\bin
-如：
-C:\Users\yujing\AppData\Local\JetBrains\Toolbox\apps\AndroidStudio\ch-0\211.7628.21.2111.8139111\bin
-```
+1.谷歌api升级到com.google.zxing:core:3.5.2
+2.开发sdk升级到34（安卓14）
+3.简化使用，新增QRCodeUtil工具类
+4.一行代码实现相机扫码解析
+5.一行代码实现选择照片并解析
+6.一行代码解析bitmap
+7.扩张生成二维码的样式和风格，可以在二维码中插入图片
 
 ## 致谢
-- ZXing 
+
+- ZXing
 - ahuyangdong  https://github.com/ahuyangdong/QrCodeLib
 
-# zxing-lib 二维码使用
 
 ### 引入
-#### 主gradle中添加
-```gradle
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
-```
-#### 项目工程gradle中添加　　　　[当前最新版：————> 1.0.0　　　　![最新版](https://img.shields.io/badge/%E6%9C%80%E6%96%B0%E7%89%88-1.0.0-green.svg)](https://search.maven.org/artifact/com.kotlinx/zxing-lib)
+
+#### 项目工程gradle中添加　　　　[当前最新版：————> 1.0.1　　　　![最新版](https://img.shields.io/badge/%E6%9C%80%E6%96%B0%E7%89%88-1.0.1-green.svg)](https://search.maven.org/artifact/com.kotlinx/zxing-lib)
 
 ```gradle
-implementation 'com.kotlinx:zxing-lib:1.0.0'
+implementation 'com.kotlinx:zxing-lib:1.0.1'
 ```
 
 ### 扫描二维码
+
 ```kotlin
-//开始扫码，代码调用这一行。
-registerPermission.launch(Manifest.permission.CAMERA)
-
-
-//请求权限结果 (这是成员变量，注册事件)
-private val registerPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-    if (it) registerCapture.launch(Intent(this, CaptureActivity::class.java))
+//获取权限后打开摄像头扫码
+QRCodeUtil.openCamera(activity) {
+    binding.tvResult.text = it //扫到二维码后解析结果
 }
 
-//扫码结果 (这是成员变量，注册事件)
-private val registerCapture = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-    if (result.resultCode == Activity.RESULT_OK) {
-        val scanResult = result.data?.extras?.getString(com.google.zxing.util.Constant.INTENT_EXTRA_KEY_QR_SCAN)
-        //这儿是后续操作
-        binding.tvResult.text = scanResult
-    }
+//选择照片并解析二维码
+QRCodeUtil.openAlbum(activity) {
+    binding.tvResult.text = it //选照片后解析结果
 }
+
+//生成二维码
+var bitmap = QrCodeGenerator.getQrCodeImage("二维码内容", 512, 512)
+//或者
+var bitmap = QRCodeUtil.encode("二维码内容", 512, 512, "UTF-8", "H", "0", Color.BLACK, Color.WHITE, null, 0F, null)
+
+//解析图片中的二维码
+val value = QRCodeUtil.decode(bitmap)?.text
 ```
 
-### 生成二维码
-```java
-Bitmap bitmap = QrCodeGenerator.getQrCodeImage("yujing", 512, 512);
+注：开摄像头扫码AndroidManifest中需要添加 <activity android:name="com.google.zxing.activity.CaptureActivity" />
+
+### 也可以自己申请权限后再扫码（不推荐）
+
+```kotlin
+//举例：获取相机权限后扫码
+activityResultRegistry.register("相机权限", ActivityResultContracts.RequestPermission()) {
+    //没有相机权限
+    if (!it) return@register Toast.makeText(this, "请打开相机权限", Toast.LENGTH_SHORT).show()
+    //监听扫码页面返回
+    activityResultRegistry.register("跳转", ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result?.resultCode != Activity.RESULT_OK) return@register //没有扫描到二维码
+        val scanResult = result.data?.extras?.getString(com.google.zxing.util.Constant.INTENT_EXTRA_KEY_QR_SCAN)
+        //扫码结果
+        binding.tvResult.text = scanResult
+    }.run { launch(Intent(this@MainActivity, CaptureActivity::class.java)) }
+}.run { launch(Manifest.permission.CAMERA) }
+
+
+//举例：扫码相册中二维码
+activityResultRegistry.register("打开手机中的相册", ActivityResultContracts.StartActivityForResult()) { result ->
+    if (result?.resultCode != Activity.RESULT_OK) return@register //没有选择照片
+    val uri: Uri? = result.data?.data
+    val bitmap = BitmapUtil.decodeUri(this, uri, 500, 500)
+    val result = QRCodeUtil.decode(bitmap)
+    if (result == null) {
+        binding.tvResult.text = ""
+        return@register Toast.makeText(this, "识别失败", Toast.LENGTH_SHORT).show()
+    }
+    //扫码结果
+    binding.tvResult.text = result.text
+}.run { launch(Intent(Intent.ACTION_GET_CONTENT).apply { type = "image/*" }) }
 ```

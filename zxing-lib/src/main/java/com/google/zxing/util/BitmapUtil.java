@@ -13,6 +13,7 @@ import java.io.InputStream;
 public class BitmapUtil {
     /**
      * 读取一个缩放后的图片，限定图片大小，避免OOM
+     *
      * @param uri       图片uri，支持“file://”、“content://”
      * @param maxWidth  最大允许宽度
      * @param maxHeight 最大允许高度

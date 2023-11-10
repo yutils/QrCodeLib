@@ -1,5 +1,6 @@
 package com.google.zxing.activity;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
@@ -11,7 +12,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
@@ -20,6 +20,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
@@ -50,7 +54,6 @@ import java.util.Vector;
  * @author Ryan.Tang
  */
 public class CaptureActivity extends AppCompatActivity implements Callback {
-    private static final int REQUEST_CODE_SCAN_GALLERY = 100;
     private CaptureActivityHandler handler;
     private ViewfinderView viewfinderView;
     private ImageButton back;
@@ -90,31 +93,24 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
 
     private View.OnClickListener albumOnClick = view -> {
         //打开手机中的相册
-        Intent innerIntent = new Intent(Intent.ACTION_GET_CONTENT); //"android.intent.action.GET_CONTENT"
-        innerIntent.setType("image/*");
-        startActivityForResult(innerIntent, REQUEST_CODE_SCAN_GALLERY);
+        ActivityResultLauncher<Intent> arr = this.getActivityResultRegistry().register("openAlbum", new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() != Activity.RESULT_OK) return;
+            if (result.getData() == null) return;
+            handleAlbumPic(result.getData());
+        });
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        arr.launch(intent);
     };
-
-    @Override
-    protected void onActivityResult(final int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_CODE_SCAN_GALLERY:
-                    handleAlbumPic(data);
-                    break;
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
 
     /**
      * 处理选择的图片
+     *
      * @param data Intent
      */
     private void handleAlbumPic(Intent data) {
         //获取选中图片的路径
         final Uri uri = data.getData();
-
         mProgress = new ProgressDialog(CaptureActivity.this);
         mProgress.setMessage("正在扫描...");
         mProgress.setCancelable(false);
@@ -141,13 +137,13 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
 
     /**
      * 扫描二维码图片的方法
+     *
      * @param uri Uri
      * @return
      */
     public Result scanningImage(Uri uri) {
-        if (uri == null) {
-            return null;
-        }
+        if (uri == null) return null;
+
         Hashtable<DecodeHintType, String> hints = new Hashtable<>();
         hints.put(DecodeHintType.CHARACTER_SET, "UTF8"); //设置二维码内容的编码
 
@@ -241,14 +237,12 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
             return;
         }
         if (handler == null) {
-            handler = new CaptureActivityHandler(this, decodeFormats,
-                    characterSet);
+            handler = new CaptureActivityHandler(this, decodeFormats, characterSet);
         }
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
     }
 
@@ -258,7 +252,6 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
             hasSurface = true;
             initCamera(holder);
         }
-
     }
 
     @Override
@@ -277,7 +270,6 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
 
     public void drawViewfinder() {
         viewfinderView.drawViewfinder();
-
     }
 
     private void initBeepSound() {
@@ -289,12 +281,9 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mediaPlayer.setOnCompletionListener(beepListener);
-
-            AssetFileDescriptor file = getResources().openRawResourceFd(
-                    R.raw.beep);
+            AssetFileDescriptor file = getResources().openRawResourceFd(R.raw.beep);
             try {
-                mediaPlayer.setDataSource(file.getFileDescriptor(),
-                        file.getStartOffset(), file.getLength());
+                mediaPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(), file.getLength());
                 file.close();
                 mediaPlayer.setVolume(BEEP_VOLUME, BEEP_VOLUME);
                 mediaPlayer.prepare();
@@ -322,7 +311,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
     private final OnCompletionListener beepListener = mediaPlayer -> mediaPlayer.seekTo(0);
 
     /**
-     *  闪光灯开关按钮
+     * 闪光灯开关按钮
      */
     private View.OnClickListener flashListener = new View.OnClickListener() {
         @Override

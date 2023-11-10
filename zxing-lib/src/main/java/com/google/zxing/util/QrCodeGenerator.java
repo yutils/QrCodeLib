@@ -15,13 +15,21 @@ import java.util.Map;
 
 public class QrCodeGenerator {
 
+    /**
+     * 将文字转换成二维码
+     *
+     * @param data   文字
+     * @param width  宽
+     * @param height 高
+     * @return
+     */
     public static Bitmap getQrCodeImage(String data, int width, int height) {
         if (data == null || data.length() == 0) {
             return null;
         }
         Map<EncodeHintType, Object> hintsMap = new HashMap<>(3);
         hintsMap.put(EncodeHintType.CHARACTER_SET, "utf-8");
-        hintsMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
+        hintsMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);//容错率
         hintsMap.put(EncodeHintType.MARGIN, 0);
         try {
             BitMatrix bitMatrix = new MultiFormatWriter().encode(data, BarcodeFormat.QR_CODE, width, height, hintsMap);
@@ -49,5 +57,4 @@ public class QrCodeGenerator {
         bitmap.setPixels(rawData, 0, w, 0, 0, w, h);
         return bitmap;
     }
-
 }

@@ -36,7 +36,7 @@ public final class Intents {
          * may be useful to limit scanning to certain formats. Use Intent.putExtra(MODE, value) with
          * one of the values below ({@link #PRODUCT_MODE}, {@link #ONE_D_MODE}, {@link #QR_CODE_MODE}).
          * Optional.
-         *
+         * <p>
          * Setting this is effectively shorthnad for setting explicit formats with {@link #SCAN_FORMATS}.
          * It is overridden by that setting.
          */
@@ -46,7 +46,7 @@ public final class Intents {
          * Comma-separated list of formats to scan for. The values must match the names of
          * {@link com.google.zxing.BarcodeFormat}s, such as {@link com.google.zxing.BarcodeFormat#EAN_13}.
          * Example: "EAN_13,EAN_8,QR_CODE"
-         *
+         * <p>
          * This overrides {@link #MODE}.
          */
         public static final String SCAN_FORMATS = "SCAN_FORMATS";

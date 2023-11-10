@@ -10,13 +10,29 @@
 
         <include layout="@layout/toolbar_main" />
 
-        <Button
-            android:id="@+id/btn_qr_code"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
-            android:text="开始扫码" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_qr_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:text="开始扫码" />
+
+            <Button
+                android:id="@+id/btn_album"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:text="相册选取" />
+        </LinearLayout>
+
 
         <TextView
             android:id="@+id/tv_result"
