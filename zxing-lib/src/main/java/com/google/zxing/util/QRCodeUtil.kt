@@ -31,9 +31,17 @@ import java.util.Hashtable
  * 二维码工具类
  *
  * @author yujing 2023年11月10日15:01:31
- * 需要导入包  implementation 'com.google.zxing:core:3.5.2'
+ * 需要导入包  implementation 'com.google.zxing:core:3.5.3'
  */
 object QRCodeUtil {
+    /**
+     * 调用相机扫描二维码 （自动判断相机权限，如果没有权限，会先请求相机权限）
+     */
+    /*
+        ScanQRCode.openCamera(activity) { it ->
+            //it 扫码结果
+        }
+     */
     @JvmStatic
     fun openCamera(activity: ComponentActivity, listener: (String?) -> Unit) {
         activity.activityResultRegistry.register("相机权限", ActivityResultContracts.RequestPermission()) {
@@ -187,11 +195,11 @@ object QRCodeUtil {
      */
     @JvmStatic
     fun addLogo(srcBitmap: Bitmap?, logoBitmap: Bitmap?, logoPercent: Float): Bitmap? {
-        var logoPercent = logoPercent
+        var percent = logoPercent
         if (srcBitmap == null) return null
         if (logoBitmap == null) return srcBitmap
         //传值不合法时使用0.2F
-        if (logoPercent < 0f || logoPercent > 1f) logoPercent = 0.2f
+        if (percent < 0f || percent > 1f) percent = 0.2f
         val srcWidth = srcBitmap.width
         val srcHeight = srcBitmap.height
         val logoWidth = logoBitmap.width
@@ -199,7 +207,7 @@ object QRCodeUtil {
         val bitmap = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawBitmap(srcBitmap, 0f, 0f, null)
-        canvas.scale(srcWidth * logoPercent / logoWidth, srcHeight * logoPercent / logoHeight, srcWidth / 2f, srcHeight / 2f)
+        canvas.scale(srcWidth * percent / logoWidth, srcHeight * percent / logoHeight, srcWidth / 2f, srcHeight / 2f)
         canvas.drawBitmap(logoBitmap, srcWidth / 2f - logoWidth / 2f, srcHeight / 2f - logoHeight / 2f, null)
         return bitmap
     }

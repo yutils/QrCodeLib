@@ -105,8 +105,6 @@ public final class ViewfinderView extends View {
         paint.setAntiAlias(true);
         scannerAlpha = 0;
         possibleResultPoints = new HashSet<>(5);
-
-
     }
 
     @Override
